@@ -40,6 +40,14 @@ class DataBlock:
         stream.write(data)
         stream.write(pack('>H', data_crc))
     
+    
+    def __repr__(self):
+        res = "%s (%d%s)" % (self.name, self.block_nr, ' L' if self.is_last else '')
+        if self.data is None:
+            return "%s EMPTY" % res
+        else:
+            return "%s %d bytes" % (res, len(self.data))
+    
     @classmethod
     def from_bytes(cls, data):
         if len(data)<21:
@@ -68,7 +76,11 @@ class DataBlock:
         if not header_crc == calc_header_crc:
             print('header crc failed...', header_crc, calc_header_crc, header)
             #raise Exception('header crc check failed')
-    
+        
+        if data_len == 0:
+            return cls(name, load_addr, exec_addr, block_nr, is_last, None)
+            
+            
         data=stream.read(data_len)
         if not len(data) == data_len:
             raise Exception('not enough bytes')
@@ -90,10 +102,14 @@ def extract_programs(chunks):
     for (type, data) in chunks:
         if type == 'data' and len(data)>=21:
             block = DataBlock.from_bytes(data)
-            print("%s (%d%s) %d bytes" % (block.name, block.block_nr, ' L' if block.is_last else '', len(block.data)))
+            print(block)
+            
             if not programs or programs[-1][0] != block.name:
-                programs.append([block.name,b''])
-            programs[-1][1] += block.data
+                programs.append([block.name,b'',[]])
+                
+            if not block.data is None:
+                programs[-1][1] += block.data
+            programs[-1][2].append(block)
         
     return programs
     

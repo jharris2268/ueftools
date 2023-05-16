@@ -32,7 +32,7 @@ def read_uef_file(stream):
             
             num_cycles,=unpack('<H', data)
             yield ('carrier', num_cycles)
-        elif identifier == 0x114:
+        elif identifier == 0x112:
             if len(data)!=2:
                 raise Exception("expected integer silence data to be a 16bit int...")
             
@@ -46,7 +46,7 @@ def read_uef_file(stream):
             secs,=unpack('<f', data)
             yield ('silence', secs)
         else:
-            print("ignoring %H [%d bytes %s]" % (identifier, length, data))
+            print("ignoring %x [%d bytes %s]" % (identifier, length, data))
 
 
 class WriteUef:

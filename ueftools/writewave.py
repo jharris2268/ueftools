@@ -6,9 +6,12 @@ SAMPLE_RATE = 44100
 
 LOW_SAMPLES = round(44100 / 1200)
 HIGH_SAMPLES = round(44100 / 2400)
-
-LOW_TONE = np.int16(28000 * np.sin(np.linspace(0, 2*np.pi, LOW_SAMPLES)[:-1]))
-HIGH_TONE = np.int16(28000 * np.sin(np.linspace(0, 2*np.pi, HIGH_SAMPLES)[:-1]))
+#LOW_SAMPLES = HIGH_SAMPLES * 2
+SCALE = 32768
+#SCALE = 30000
+LOW_TONE = bytes(np.int16(SCALE * np.sin(np.linspace(0, 2*np.pi, LOW_SAMPLES+1)[:-1] + np.pi)))
+HIGH_TONE = bytes(np.int16(SCALE * np.sin(np.linspace(0, 2*np.pi, HIGH_SAMPLES+1)[:-1] + np.pi)))
+HIGH_TONE_TWO = bytes(np.int16(SCALE * np.sin(np.linspace(0, 4*np.pi, LOW_SAMPLES+1)[:-1] + np.pi)))
 
 def write_byte(stream, by):
     write_bit(stream, False)
@@ -25,8 +28,8 @@ def write_byte(stream, by):
 
 def write_bit(stream, bit):
     if bit:
-        stream.writeframes(HIGH_TONE)
-        stream.writeframes(HIGH_TONE)
+        stream.writeframes(HIGH_TONE_TWO)
+        #stream.writeframes(HIGH_TONE)
     else:
         stream.writeframes(LOW_TONE)
 
@@ -39,15 +42,21 @@ def write_wave_file(out_filename, uef_chunks):
     
     for type, data in uef_chunks:
         if type == 'silence':
-            num_frames = data * SAMPLE_RATE
-            out_obj.writeframes([0 for i in range(numframes)])
+            num_frames = int(data * SAMPLE_RATE)
+            out_obj.writeframes(b'\0\0'*num_frames)
         elif type == 'carrier':
-            for _ in range(data):
+            ntwo = data//2
+            for _ in range(ntwo):
+                out_obj.writeframes(HIGH_TONE_TWO)
+            if (data % 2)==1:
                 out_obj.writeframes(HIGH_TONE)
+            #for _ in range(data):
+            #    out_obj.writeframes(HIGH_TONE)
         elif type == 'data':
             for by in data:
                 write_byte(out_obj,by)
-            
+        else:
+            print("??", type, data)
     out_obj.close()
             
         

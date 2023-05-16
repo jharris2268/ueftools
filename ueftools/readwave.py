@@ -106,7 +106,7 @@ def find_low(cycles):
         try:
             count += 1
             item = next(cycles)
-            if item[1] == 'L':
+            if item[1] != 'H':
                 return item, count
         except StopIteration:
             return None, count
@@ -159,6 +159,7 @@ def to_bytes(cycles):
                 
             
             elif key == 'S':
+                
                 yield ('silence', (end-start)/44100.0 )
                 (idx,key,start,end) = next(cycles)
             
