@@ -1,17 +1,19 @@
 
-
+from struct import pack, unpack
 
 def read_uef_file(stream):
+    header = stream.read(12)
+    if not len(header)==12:
+        raise Exception("stream not long enough")
+    if header[:10] !=  b'UEF File!\x00':
+        raise Exception("stream doesn't start with correct header")
     
-    if stream.read(10) !=  b'UEF File!\x00':
-        raise Exception("stream doesnt start with correct header")
-    
-    vers, = unpack(stream.read(2))
+    vers, = unpack('<H', header[10:12])
     
     while True:
         header = stream.read(6)
         if len(header)==0:
-            raise StopIteration
+            return
         if len(header)!=6:
             raise Exception("not enough bytes read for header...")
             

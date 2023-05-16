@@ -5,3 +5,4 @@ from .writewave import write_wave_file
 
 from .datablock import DataBlock, extract_programs
 
+from .utils import call_basictool

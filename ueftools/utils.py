@@ -10,3 +10,23 @@ def crc(bytes):
                 t = 0
             crc = (crc * 2 + t) & 0xFFFF
     return crc
+
+
+from subprocess import Popen, PIPE
+
+def call_basictool(data, format_option=False):
+    cmd = ['/home/james/bbcmicro/basictool/basictool', '-2']
+    if format_option:
+        cmd.append('-f')
+    cmd.append('-')
+    p = Popen(cmd, stdin = PIPE, stdout=PIPE, stderr = PIPE)
+    
+    res, err = p.communicate(input=data)
+    
+    if err:
+        raise Exception(err.decode('ascii'))
+        
+    return res.decode('ascii')
+    
+    
+    

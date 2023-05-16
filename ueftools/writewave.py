@@ -20,15 +20,15 @@ def write_byte(stream, by):
     write_bit(stream, by & 32)
     write_bit(stream, by & 64)
     write_bit(stream, by & 128)
-    write_bit(True)
+    write_bit(stream, True)
     
 
 def write_bit(stream, bit):
     if bit:
-        stream.write(HIGH_TONE)
-        stream.write(HIGH_TONE)
+        stream.writeframes(HIGH_TONE)
+        stream.writeframes(HIGH_TONE)
     else:
-        stream.write(LOW_TONE)
+        stream.writeframes(LOW_TONE)
 
 def write_wave_file(out_filename, uef_chunks):
     
@@ -40,13 +40,13 @@ def write_wave_file(out_filename, uef_chunks):
     for type, data in uef_chunks:
         if type == 'silence':
             num_frames = data * SAMPLE_RATE
-            out_obj.write([0 for i in range(numframes)])
+            out_obj.writeframes([0 for i in range(numframes)])
         elif type == 'carrier':
             for _ in range(data):
-                out_obj.write(LOW_TONE)
+                out_obj.writeframes(HIGH_TONE)
         elif type == 'data':
             for by in data:
-                out_obj.write(wave_byte(by))
+                write_byte(out_obj,by)
             
     out_obj.close()
             
