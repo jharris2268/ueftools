@@ -1,0 +1,22 @@
+[project]
+name = "ueftools"
+version = "0.0.1"
+description = "[BBC Micro] Convert between wav and uef / bbc basic text files"
+authors = [
+  { name = "Example Author", email = "author@example.com" },
+]
+license = { file = "LICENSE" }
+#readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.7"
+dependencies = [
+  "numpy","scipy"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jharris2268/ueftools"
+
