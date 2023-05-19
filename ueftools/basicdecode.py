@@ -249,7 +249,7 @@ def decode_line(data):
             high=x ^ z
             
             res.append(str(low + high*256))
-            i+=3
+            i+=4
         elif c in tokens:
             
             res.append(tokens[c])
