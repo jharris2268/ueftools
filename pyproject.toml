@@ -20,3 +20,10 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/jharris2268/ueftools"
 
+[project.scripts]
+wave_to_uef = "ueftools:wave_to_uef"
+uef_to_wave = "ueftools:uef_to_wave"
+uef_to_basic = "ueftools:uef_to_basic"
+basic_to_uef = "ueftools:basic_to_uef"
+basic_remove_linenumbers = "ueftools:call_remove_linenumbers"
+basic_add_linenumbers = "ueftools:call_add_linenumbers"

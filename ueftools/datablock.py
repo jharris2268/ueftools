@@ -25,21 +25,24 @@ class DataBlock:
         self.data = data
         
     
-    def pack(self, stream):
-        header = name  + '\0' +\
+    def pack(self):
+        stream = BytesIO()
+        
+        header = self.name  + b'\0' +\
                     pack('<IIHHBI',   self.load_addr, self.exec_addr,
                                         self.block_nr, len(self.data),
                                         0x80 if self.is_last else 0,
                                         0)
         header_crc = crc(header)
-        data_crc = crc_(data)
+        data_crc = crc(self.data)
         
         stream.write(b'*')
         stream.write(header)
         stream.write(pack('>H', header_crc))
-        stream.write(data)
+        stream.write(self.data)
         stream.write(pack('>H', data_crc))
     
+        return stream.getvalue()
     
     def __repr__(self):
         res = "%s (%d%s)" % (self.name, self.block_nr, ' L' if self.is_last else '')
@@ -112,5 +115,41 @@ def extract_programs(chunks):
             programs[-1][2].append(block)
         
     return programs
+    
+    
+def split_data(data, num_bytes):
+    if len(data) <= num_bytes:
+        return [data]
+    
+    result = []
+    for start_idx in range(0, len(data), 256):
+        end_idx = min(len(data), start_idx+256)
+        result.append(data[start_idx:end_idx])
+    return result
+    
+    
+def encode_programs(programs):
+    
+    LOADADDR = 0xffff3000
+    EXECADDR = 0xffff3000
+    
+    result = [('carrier', 1500)]
+    
+    for prog_name, data in programs:
+        
+        data_split = split_data(data, 256)
+        
+        for block_nr,blob in enumerate(data_split):
+            is_last = block_nr==len(data_split)-1
+            block = DataBlock(prog_name, LOADADDR, EXECADDR, block_nr, is_last, blob)
+            
+            result.append(('data', block.pack()))
+            if not is_last:
+                result.append(('carrier', 600))
+    
+        result.append(('carrier', 1500))
+        
+    return result
+        
     
     

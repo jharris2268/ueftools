@@ -9,14 +9,22 @@ def calc_moving_average(arr, n=3):
     
 
 
-def read_wave_file(filename):
+def read_wave_file(filename, ignore_first=None, ignore_last=None):
     samplerate, arr = scipy.io.wavfile.read(filename)
+    if len(arr.shape)>1:
+        arr=arr[:,0]
+    if ignore_first is not None or ignore_last is not None:
+        ii = int(samplerate * (ignore_first or 0))
+        jj = int(samplerate * (ignore_last or 0))
+        arr = arr[ii:-jj]
+        
     if samplerate != 44100:
         raise Exception("sample rate must be 44100")
     
-    moving_avg = calc_moving_average(arr)
     
-    parts = find_cycle_parts(moving_avg)
+    signs_dirs_iter = iter_signs_dirs(arr)
+    
+    parts = find_cycle_parts(signs_dirs_iter)
     
     cycles = merge_cycle_parts(parts)
     
@@ -24,19 +32,24 @@ def read_wave_file(filename):
         yield chunk
     
     
+def iter_signs_dirs(arr, n=3):
     
-    
-def find_cycle_parts(moving_avg):
+    moving_avg = calc_moving_average(arr,n) if n else arr
     
     nsamp = moving_avg.shape[0]
     signs = np.sign(moving_avg)
     dirs = np.sign(np.gradient(moving_avg))
     
+    return zip(range(nsamp), signs, dirs)
+    
+def find_cycle_parts(signs_dirs_iter):
+        
+    
     #reps = []
     
     ii, curr = 0, None
     
-    for i, a, b in zip(range(nsamp), signs, dirs):
+    for i, a, b in signs_dirs_iter:
         if a==0 or b==0 or kk[a,b] == curr:
             continue
         
@@ -75,7 +88,7 @@ def merge_cycle_parts(itr):
             
             ln = D[1]-A[0]
             
-            if ln > 1000:
+            if ln > 200:
                 print('silence?', A[0],D[1], ln)
                 yield (idx, 'S', A[0],D[1])
             
@@ -86,7 +99,7 @@ def merge_cycle_parts(itr):
             elif ln < 22:
                 yield (idx, 'H',A[0],D[1])
             elif ln < 34:
-                #print('in between??', A[0],D[1], ln)
+                print('in between??', A[0],D[1], ln)
                 raise Exception("??")
             elif ln < 39:
                 yield (idx, 'L',A[0],D[1])
